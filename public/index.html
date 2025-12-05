@@ -1,34 +1,49 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Image Search Demo</title>
-</head>
-<body style="font-family: Arial; padding: 30px;">
+<hr><br>
 
-    <h2>Search for an Image</h2>
+<h2>Upload / Replace Image</h2>
 
-    <input id="inputBox" placeholder="Type something like 'tom'" 
-           style="width: 300px; padding: 8px;">
-           
-    <button onclick="searchImage()" style="padding: 8px;">Show Image</button>
+<input id="uploadName" placeholder="Enter name like 'tom'" 
+       style="width: 200px; padding: 8px;">
 
-    <br><br>
+<input id="uploadFile" type="file" style="padding: 8px;">
 
-    <img id="imgBox" width="300" style="border: 1px solid #ccc;">
+<button onclick="uploadImage()" style="padding: 8px;">Upload</button>
 
-    <script>
-        function searchImage() {
-            let text = document.getElementById("inputBox").value;
+<p id="uploadMsg" style="color: green; font-weight: bold;"></p>
 
-            //text = jerry
-            //localhost:3000/api/getImage?name=jerry
-            fetch(`/api/getImage?name=${encodeURIComponent(text)}`)
-            .then(res => res.json())
-            .then(data => {
-                document.getElementById("imgBox").src = data.url;
-            });
-        }
-    </script>
+<script>
+function uploadImage() {
+    const name = document.getElementById("uploadName").value.trim();
+    const file = document.getElementById("uploadFile").files[0];
+    const msg = document.getElementById("uploadMsg");
 
-</body>
-</html>
+    if (!name) {
+        msg.innerText = "Please enter a name (e.g., tom)";
+        msg.style.color = "red";
+        return;
+    }
+
+    if (!file) {
+        msg.innerText = "Please select a file.";
+        msg.style.color = "red";
+        return;
+    }
+
+    let formData = new FormData();
+    formData.append("image", file);
+
+    fetch(`/api/upload?name=${name}`, {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        msg.innerText = data.msg || "Upload successful!";
+        msg.style.color = "green";
+    })
+    .catch(err => {
+        msg.innerText = "Upload failed";
+        msg.style.color = "red";
+    });
+}
+</script>
