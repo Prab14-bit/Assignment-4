@@ -1,49 +1,53 @@
-<hr><br>
+import { useState } from "react";
 
-<h2>Upload / Replace Image</h2>
+function App() {
+  const [name, setName] = useState("");
+  const [image, setImage] = useState("");
+  const [file, setFile] = useState(null);
+  const [msg, setMsg] = useState("");
 
-<input id="uploadName" placeholder="Enter name like 'tom'" 
-       style="width: 200px; padding: 8px;">
+  const searchImage = async () => {
+    const res = await fetch(`/api/getImage?name=${name}`);
+    const data = await res.json();
+    setImage(data.url);
+  };
 
-<input id="uploadFile" type="file" style="padding: 8px;">
-
-<button onclick="uploadImage()" style="padding: 8px;">Upload</button>
-
-<p id="uploadMsg" style="color: green; font-weight: bold;"></p>
-
-<script>
-function uploadImage() {
-    const name = document.getElementById("uploadName").value.trim();
-    const file = document.getElementById("uploadFile").files[0];
-    const msg = document.getElementById("uploadMsg");
-
-    if (!name) {
-        msg.innerText = "Please enter a name (e.g., tom)";
-        msg.style.color = "red";
-        return;
-    }
-
-    if (!file) {
-        msg.innerText = "Please select a file.";
-        msg.style.color = "red";
-        return;
-    }
-
-    let formData = new FormData();
+  const uploadImage = async () => {
+    const formData = new FormData();
     formData.append("image", file);
 
-    fetch(`/api/upload?name=${name}`, {
-        method: "POST",
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        msg.innerText = data.msg || "Upload successful!";
-        msg.style.color = "green";
-    })
-    .catch(err => {
-        msg.innerText = "Upload failed";
-        msg.style.color = "red";
+    const res = await fetch(`/api/upload?name=${name}`, {
+      method: "POST",
+      body: formData,
     });
+
+    const data = await res.json();
+    setMsg(data.msg);
+  };
+
+  return (
+    <div style={{ padding: "30px" }}>
+      <h2>Search for an Image</h2>
+
+      <input
+        placeholder="tom"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+      />
+      <button onClick={searchImage}>Show Image</button>
+
+      <br /><br />
+      {image && <img src={image} width="250" alt="" />}
+
+      <hr />
+
+      <h2>Upload / Replace Image</h2>
+      <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+      <button onClick={uploadImage}>Upload</button>
+
+      <p>{msg}</p>
+    </div>
+  );
 }
-</script>
+
+export default App;
